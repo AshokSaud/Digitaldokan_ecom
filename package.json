@@ -2,8 +2,6 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
-  
-
   "scripts": {
     "dev": "nodemon server.ts"
   },
@@ -12,10 +10,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "pg": "^8.17.1",
+    "pg-hstore": "^2.3.4",
+    "postgres": "^3.4.8",
+    "sequelize-typescript": "^2.1.6"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
