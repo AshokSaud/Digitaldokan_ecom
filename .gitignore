@@ -1,9 +1,4 @@
 node_modules
-package-lock.json
-package.json
 .env
 
-# Vite files
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
-.vite/
+
