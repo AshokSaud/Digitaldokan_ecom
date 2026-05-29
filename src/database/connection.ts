@@ -6,7 +6,8 @@ if (!process.env.DATABASE_URL) {
 
 
 const sequelize = new Sequelize(process.env.DATABASE_URL as string,{
-  models : [__dirname + '/model/*.ts']
+  models : [__dirname + '/model/*.ts'],
+  logging: false // terminal ma query execution hernu xa vaney true garney
 });
 
 
@@ -22,7 +23,7 @@ try{
   console.error("Database connection error:", error);
 }
 
-sequelize.sync({force : false,alter:false}).then(()=>{
+sequelize.sync({force : false, alter:false}).then(()=>{ //force:false --> Won't drop & recreate tables, alter:false-->Won't modify existing columns
     console.log("synced !!")
 })
 
