@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../database/model/userModel";
 import bcrypt from 'bcrypt'
+import generateToken from "../services/generateToken";
 
 
 class UserController {
@@ -35,10 +36,10 @@ class UserController {
             message: "User registered successfully",
         })
     }
-   
-    
+
+
     static async login(req: Request, res: Response) {
-     //accept incoming data --> email and password
+        //accept incoming data --> email and password
         const { email, password } = req.body
         if (!email || !password) {
             res.status(200).json({
@@ -53,25 +54,27 @@ class UserController {
             }
         })
         console.log(user)
-    
+
 
         //if email exist then compare password
         if (!user) {
             res.status(404).json({
                 message: "user not found"
             })
-        }else{
+        } else {
             //compare password
             const isPasswordMatch = bcrypt.compareSync(password, user.password)//password --> user le login garda pathako password, user.password --> database ma hash bhako password
-            if(!isPasswordMatch){
+            if (!isPasswordMatch) {
                 res.status(400).json({
-                    message : "Invalid password"
+                    message: "Invalid password"
                 })
-            }else{
-            //if password mathches then --> generate token(jwt)
-            res.status(200).json({
-                message: "Login successful"
-            })
+            } else {
+                //if password mathches then --> generate token(jwt)
+                const token = generateToken(user.id)
+                res.status(200).json({
+                    message: "Login successful",
+                    token: token
+                })
 
             }
         }
