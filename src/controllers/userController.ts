@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import User from "../database/model/userModel";
 import bcrypt from 'bcrypt'
 import generateToken from "../services/generateToken";
+import generateOtp from "../services/generateOtp";
+import sendMail from "../services/sendMail";
 
 
 class UserController {
@@ -32,6 +34,13 @@ class UserController {
             email,
             password: bcrypt.hashSync(password, 10)
         })
+        await sendMail({
+            to:email,
+            subject: "Registration successful",
+            text: `Welcome to Digital Dokan, ${username}! Your registration was successful.`
+        })
+
+
         res.status(201).json({
             message: "User registered successfully",
         })
@@ -79,7 +88,42 @@ class UserController {
             }
         }
     }
-
+    static async handleForgotPassword(req:Request, res: Response) {
+        const {email} = req.body
+        if(!email){
+             res.status(400).json({
+                message : "please provide email"
+            })
+            return
+        }
+        const [user] = await User.findAll({
+            where: {
+                email : email
+            }
+        })
+        if(!user){
+            res.status(404).json({
+                message : "Email not registered"
+            })
+            return
+        }
+        //generate otp, send otp to mail
+        const otp = generateOtp()
+        await sendMail({
+            to: email,
+            subject: "Password reset OTP",
+            text: `Your OTP for password reset is ${otp}`
+        })
+        //store otp and otp generated time in database
+        user.otp = otp.toString()
+        user.otpGeneratedTime = Date.now().toString()
+        await user.save()
+        
+        res.status(200).json({
+            message : "OTP sent to email"
+        })
+        
+    }
 
 }
 
