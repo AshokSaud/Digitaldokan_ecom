@@ -4,6 +4,9 @@ import bcrypt from 'bcrypt'
 import generateToken from "../services/generateToken";
 import generateOtp from "../services/generateOtp";
 import sendMail from "../services/sendMail";
+import sendResponse from "../services/sendResponse";
+import checkOtpExpiration from "../services/checkOtpExpiration";
+import findData from "../services/findData";
 
 
 class UserController {
@@ -17,17 +20,17 @@ class UserController {
             return   //data aayena bhane tala ko code execute hunna, return le function lai terminate garxa
         }
         //check whether user already exists or not
-        // const [data] = await User.findAll({
-        //     where : {
-        //         email : email
-        //     }
-        // })
-        // if(data){
-        //     res.status(400).json({
-        //         message : "User already exists"
-        //     })
-        //     return
-        // }
+        const [data] = await User.findAll({
+            where: {
+                email: email
+            }
+        })
+        if (data) {
+            res.status(400).json({
+                message: "User already exists"
+            })
+            return
+        }
         // data --> users table ma insert garne 
         const user = await User.create({
             username,
@@ -35,7 +38,7 @@ class UserController {
             password: bcrypt.hashSync(password, 10)
         })
         await sendMail({
-            to:email,
+            to: email,
             subject: "Registration successful",
             text: `Welcome to Digital Dokan, ${username}! Your registration was successful.`
         })
@@ -62,8 +65,6 @@ class UserController {
                 email: email
             }
         })
-        console.log(user)
-
 
         //if email exist then compare password
         if (!user) {
@@ -88,22 +89,22 @@ class UserController {
             }
         }
     }
-    static async handleForgotPassword(req:Request, res: Response) {
-        const {email} = req.body
-        if(!email){
-             res.status(400).json({
-                message : "please provide email"
+    static async handleForgotPassword(req: Request, res: Response) {
+        const { email } = req.body
+        if (!email) {
+            res.status(400).json({
+                message: "please provide email"
             })
             return
         }
         const [user] = await User.findAll({
             where: {
-                email : email
+                email: email
             }
         })
-        if(!user){
+        if (!user) {
             res.status(404).json({
-                message : "Email not registered"
+                message: "Email not registered"
             })
             return
         }
@@ -118,13 +119,82 @@ class UserController {
         user.otp = otp.toString()
         user.otpGeneratedTime = Date.now().toString()
         await user.save()
-        
+
         res.status(200).json({
-            message : "OTP sent to email"
+            message: "OTP sent to email"
         })
-        
+
     }
+    static async verifyOtp(req: Request, res: Response) {
+        const { otp, email } = req.body
+        if (!otp || !email) {
+            sendResponse(res, 400, "Please provide email and otp")
+            return
+        }
+        const user = await findData(User, email)
+        if (!user) {
+            sendResponse(res, 404, "No user with that email")
+            return
+        }
+        // otp verification 
+        const [data] = await User.findAll({
+            where: {
+                otp,
+                email
+            }
+        })
+        if (!data) {
+            sendResponse(res, 404, 'Invalid OTP')
+            return
+        }
+        const otpGeneratedTime = data.otpGeneratedTime
+        checkOtpExpiration(res, otpGeneratedTime, 1200000)
+    }
+    static async resetPassword(req: Request, res: Response) {
+        const { newPassword, confirmPassword, email } = req.body
+        if (!newPassword || !confirmPassword || !email) {
+            sendResponse(res, 400, 'please provide newPassword,confirmPassword,email,otp')
+            return
+        }
+        if (newPassword !== confirmPassword) {
+            sendResponse(res, 400, 'newpassword and confirm password must be same')
+            return
+        }
+        const user = await findData(User, email)
+        if (!user) {
+            sendResponse(res, 404, 'No email with that user')
+        }
+        user.password = bcrypt.hashSync(newPassword, 12)
+        await user.save()
+        sendResponse(res, 200, "Password reset successfully!!!")
 
-}
+    }
+    static async fetchUsers(req: Request, res: Response) {
+        const users = await User.findAll({
+            attributes: ["id", "username", "email"]
+        })
+        res.status(200).json({
+            message: "Users fetched successfully",
+            data: users
+        })
+    }
+    static async deleteUser(req: Request, res: Response) {
+        const { id } = req.params
+        if (!id) {
+            res.status(400).json({
+                message: "Please provide Id "
+            })
+            return
+        }
+        await User.destroy({
+            where: {
+                id
+            }
+        })
+        res.status(200).json({
+            message: "Users deleted successfully",
 
+        })
+    }
+} 
 export default UserController
