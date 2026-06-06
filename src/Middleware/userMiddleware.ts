@@ -30,7 +30,7 @@ class UserMiddleware{
         return
        }
         // validate token 
-       jwt.verify(token,process.env.JWT_SECRET_KEY as string, async (err,result:any)=>{
+       jwt.verify(token,process.env.JWT_SECRET_KEY as string, async (err,result:any)=>{ //token verify vayo ki nai vanera func ma aayera ko hunxa,1st vayena vaney error aauxa,2nd ma vayo vaney result aauxa(err,result) 
         if(err){
             res.status(403).json({
                 message : "Invalid token !!!"
@@ -45,7 +45,7 @@ class UserMiddleware{
                 return
             }
             req.user = userData 
-            next()
+            next()  // yesley chai route ma next function lai execute huna dinxa, important
         }
        })
 
