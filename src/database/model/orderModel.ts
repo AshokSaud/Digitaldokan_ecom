@@ -1,4 +1,5 @@
 import {Table,Model,DataType,Column, PrimaryKey, AllowNull, Validate} from "sequelize-typescript";
+import { OrderStatus } from "../../globals/types";
 
 @Table({
     tableName:"orders",
@@ -54,8 +55,8 @@ class Order extends Model{
     declare totalAmount: number
 
     @Column({
-        type:DataType.ENUM("OrderStatus.pending","OrderStatus.cancelled","OrderStatus.Delivered","OrderStatus.Ontheway","OrderStatus.Preparation"),
-        defaultValue:"OrderStatus.pending"
+        type:DataType.ENUM(OrderStatus.Pending,OrderStatus.Cancelled,OrderStatus.Delivered,OrderStatus.Ontheway,OrderStatus.Preparation),
+        defaultValue:OrderStatus.Pending
     })
     declare OrderStatus: string
 

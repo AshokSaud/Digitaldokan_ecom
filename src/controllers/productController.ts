@@ -2,11 +2,6 @@ import { Request, Response } from "express";
 import Product from "../database/model/productModel";
 import Category from "../database/model/categoryModel";
 
-// interface ProductRequest extends Request {
-
-//     file?:Express.Multer.File
-    
-// }
 
 
 class productController {
