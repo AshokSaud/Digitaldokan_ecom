@@ -13,7 +13,7 @@ if (!process.env.DATABASE_URL) {
 
 const sequelize = new Sequelize(process.env.DATABASE_URL as string,{
   models : [__dirname + '/model/*.ts'],
-  logging: false // terminal ma query execution hernu xa vaney true garney
+  // logging: false // terminal ma query execution hernu xa vaney true garney
 });
 
 
