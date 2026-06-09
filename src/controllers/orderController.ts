@@ -1,30 +1,31 @@
-import { Request,Response } from "express";
+import { Request, Response } from "express";
 import Order from "../database/model/orderModel";
 import OrderDetail from "../database/model/orderDetail";
 import { PaymentMethod } from "../globals/types";
 import Payment from "../database/model/paymentModel";
+import axios from "axios";  //Khalti ko api backend bata hit garauna
 
 
-interface IProduct{
-    productId : string,
-    productQty : string
+interface IProduct {
+    productId: string,
+    productQty: string
 }
 
-interface OrderRequest extends Request{
-    user? :{
+interface OrderRequest extends Request {
+    user?: {
         id: string
     }
 }
 
 
-class OrderController{
-    async createOrder(req:OrderRequest, res:Response){
+class OrderController {
+    async createOrder(req: OrderRequest, res: Response) {
         const userId = req.user?.id  //userMilldeware dekhi taneko userId
-        const{phoneNumber,AddressLine,totalAmount,paymentMethod} = req.body
-        const products:IProduct[]=req.body.products
-        if(!phoneNumber|| !AddressLine || !totalAmount || products.length == 0){
+        const { phoneNumber, AddressLine, totalAmount, paymentMethod } = req.body
+        const products: IProduct[] = req.body.products
+        if (!phoneNumber || !AddressLine || !totalAmount || products.length == 0) {
             res.status(404).json({
-                message:"please provide phoneNumber,AddressLine,totalAmount,products"
+                message: "please provide phoneNumber,AddressLine,totalAmount,products"
             })
             return
         }
@@ -36,29 +37,45 @@ class OrderController{
             userId
         })
         //for orderDetails
-        console.log(orderData,"OrderData!!")
-        console.log(products)
-        products.forEach(async function(product){
+        products.forEach(async function (product) {
             await OrderDetail.create({
-                quantity : product.productQty,  //not a product of database
-                productId : product.productId,
-                orderId : orderData.id
+                quantity: product.productQty,  //not a product of database
+                productId: product.productId,
+                orderId: orderData.id
             })
         })
         //for payment
-        if(paymentMethod == PaymentMethod.COD){
-            await Payment.create({
-                orderId : orderData.id,
-                paymentMethod : paymentMethod
+        const paymentData = await Payment.create({
+            orderId: orderData.id,
+            paymentMethod: paymentMethod
+        })
+        if (paymentMethod == PaymentMethod.Khalti) {
+            const data = {
+                return_url: "http://localhost:5173",
+                website_url: "http://localhost:5173",
+                amount: totalAmount * 100,
+                purchase_order_id: orderData.id,
+                purchase_order_name: "order_" + orderData.id
+            }
+            const response = await axios.post("https://dev.khalti.com/api/v2/epayment/initiate/", data, {
+                headers: {
+                    Authorization: "Key 9928c8c6082e40faac06604f2f3ccd3a"
+                }
             })
-        }else if (paymentMethod == PaymentMethod.Khalti){
-            
-        }else{
+            const khaltiResponse = response.data
+            paymentData.pidx = khaltiResponse.pidx
+            paymentData.save()
+            console.log(khaltiResponse)
+            res.status(200).json({
+                message: "Order created successfully",
+                url : khaltiResponse.payment_url
+            })
+        } else {
 
         }
-        res.status(200).json({
-            message: "Order created successfully"
-        })
+        // res.status(200).json({
+        //     message: "Order created successfully"
+        // })
     }
 
 }

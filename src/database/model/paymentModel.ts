@@ -27,5 +27,10 @@ class Payment extends Model{
     })
     declare paymentStatus : string
 
+    @Column({
+        type : DataType.STRING
+    })
+    declare pidx:string
+
 }
 export default Payment
