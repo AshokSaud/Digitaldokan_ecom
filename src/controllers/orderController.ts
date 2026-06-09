@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Order from "../database/model/orderModel";
 import OrderDetail from "../database/model/orderDetail";
-import { PaymentMethod } from "../globals/types";
+import { PaymentMethod, PaymentStatus } from "../globals/types";
 import Payment from "../database/model/paymentModel";
 import axios from "axios";  //Khalti ko api backend bata hit garauna
 
@@ -19,7 +19,7 @@ interface OrderRequest extends Request {
 
 
 class OrderController {
-    async createOrder(req: OrderRequest, res: Response) {
+    async createOrder(req: OrderRequest, res: Response):Promise<void> {
         const userId = req.user?.id  //userMilldeware dekhi taneko userId
         const { phoneNumber, AddressLine, totalAmount, paymentMethod } = req.body
         const products: IProduct[] = req.body.products
@@ -68,14 +68,50 @@ class OrderController {
             console.log(khaltiResponse)
             res.status(200).json({
                 message: "Order created successfully",
-                url : khaltiResponse.payment_url
+                url : khaltiResponse.payment_url,
+                pidx : paymentData.pidx
             })
-        } else {
+        } else if(paymentMethod ==PaymentMethod.Esewa) {
 
+        }else{
+            res.status(200).json({
+                message:"Order created Successfully"
+            })
         }
-        // res.status(200).json({
-        //     message: "Order created successfully"
-        // })
+    }
+    async verifyTransaction(req:OrderRequest,res:Response):Promise<void> {
+        const {pidx} = req.body
+        if(!pidx){
+            res.status(400).json({
+                message: "Please provide pidx!!"
+            })
+            return
+        }
+        const response = await axios.post("https://dev.khalti.com/api/v2/epayment/lookup/",{
+            pidx : pidx
+        },{
+            headers:{
+                Authorization: "Key 9928c8c6082e40faac06604f2f3ccd3a"
+            }
+        })
+        const data = response.data
+        if(data.status === "Completed"){
+            await Payment.update({
+                paymentStatus : PaymentStatus.Paid
+            },{
+                where:{
+                    pidx: pidx
+                }
+            })
+            res.status(200).json({
+                message:"Payment verified successfully"
+            })
+        }else{
+             res.status(200).json({
+                message:"Payment not verified or cancelled"
+            })
+        }
+
     }
 
 }
