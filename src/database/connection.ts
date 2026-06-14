@@ -5,6 +5,7 @@ import Order from "./model/orderModel";
 import User from "./model/userModel";
 import OrderDetail from "./model/orderDetail";
 import Payment from "./model/paymentModel";
+import Cart from "./model/cartModel";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is missing");
@@ -50,6 +51,13 @@ Order.hasOne(Payment,{foreignKey:'orderId'})
 
 OrderDetail.belongsTo(Order,{foreignKey:'orderId'})
 Order.hasOne(OrderDetail,{foreignKey:'orderId'})
+
+//cart relationship-> userId & Cart, productId & cart
+Cart.belongsTo(User,{foreignKey:'userId'})
+User.hasOne(Cart,{foreignKey:'userId'})
+
+Cart.belongsTo(Product,{foreignKey:'productId'})
+Product.hasMany(Cart,{foreignKey:'productId'})
 
 export default sequelize;
 
