@@ -6,13 +6,14 @@ import User from "./model/userModel";
 import OrderDetail from "./model/orderDetail";
 import Payment from "./model/paymentModel";
 import Cart from "./model/cartModel";
+import { envConfig } from "../config/config";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is missing");
 }
 
 
-const sequelize = new Sequelize(process.env.DATABASE_URL as string,{
+const sequelize = new Sequelize(envConfig.databaseUrl as string,{
   models : [__dirname + '/model/*.ts']
 });
 

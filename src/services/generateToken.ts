@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken"
+import { envConfig } from "../config/config"
 
 const generateToken = (userId: string) => {
 
-    const token = jwt.sign({ userId: userId }, process.env.JWT_SECRET_KEY as string, {
-        expiresIn: process.env.JWT_EXPIRES_IN as any
+    const token = jwt.sign({ userId: userId }, envConfig.jwtSecretKey as string, {
+        expiresIn: envConfig.jwtExpiresIn as any
     })
     return token
 

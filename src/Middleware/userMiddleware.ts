@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from 'jsonwebtoken'
-
-import UserController from "../controllers/userController";
 import User from "../database/model/userModel";
+import { envConfig } from "../config/config";
 
 export enum Role{
     Admin = 'admin', 
@@ -30,7 +29,7 @@ class UserMiddleware{
         return
        }
         // validate token 
-       jwt.verify(token,process.env.JWT_SECRET_KEY as string, async (err,result:any)=>{ //token verify vayo ki nai vanera func ma aayera ko hunxa,1st vayena vaney error aauxa,2nd ma vayo vaney result aauxa(err,result) 
+       jwt.verify(token,envConfig.jwtSecretKey as string, async (err,result:any)=>{ //token verify vayo ki nai vanera func ma aayera ko hunxa,1st vayena vaney error aauxa,2nd ma vayo vaney result aauxa(err,result) 
         if(err){
             res.status(403).json({
                 message : "Invalid token !!!"

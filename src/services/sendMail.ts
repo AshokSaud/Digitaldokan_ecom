@@ -1,5 +1,6 @@
 
 import nodemailer from "nodemailer"
+import { envConfig } from "../config/config"
 
 interface IData { //type for data to be sent in sendMail 
     to: string,
@@ -11,8 +12,8 @@ const sendMail = async (data: IData) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_PASSWORD
+            user: envConfig.email,
+            pass: envConfig.emailPassword
         }
     })
     const mailOptions = {
