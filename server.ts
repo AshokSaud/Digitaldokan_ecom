@@ -23,7 +23,8 @@ function startServer() {
   const io = new Server(server, {
     cors: {
       origin: 'http://localhost:5173'
-    }
+    },
+    transports: ['websocket'] 
   })
   let onlineUsers: { socketId: string, userId: string, role: string }[] = []
   let addToOnlineUsers = (socketId: string, userId: string, role: string) => {

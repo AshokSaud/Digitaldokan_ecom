@@ -8,7 +8,7 @@ import Payment from "./model/paymentModel";
 import Cart from "./model/cartModel";
 import { envConfig } from "../config/config";
 
-if (!process.env.DATABASE_URL) {
+if (!envConfig.databaseUrl) {
   throw new Error("DATABASE_URL is missing");
 }
 

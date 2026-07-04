@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import Cart from "../database/model/cartModel";
 import Product from "../database/model/productModel";
+import Category from "../database/model/categoryModel";
 
 interface AuthRequest extends Request {
     user?: {
@@ -38,8 +39,24 @@ class CartController {
                 quantity
             })
         }
+        const cartData = await Cart.findAll({
+            where:{
+                userId
+            },
+            include:[
+                {
+                    model: Product,
+                    include:[
+                        {
+                            model: Category
+                        }
+                    ]
+                }
+            ]
+        })
         res.status(200).json({
-            message: "Product added to the cart"
+            message: "Product added to the cart",
+            data: cartData
         })
     }
     async getMyCartItems(req:AuthRequest,res:Response){
@@ -51,7 +68,7 @@ class CartController {
             include:[
                 {
                     model: Product,
-                    attributes: ['id','productName','productImageUrl']
+                    attributes: ['id','productName','productPrice','productImageUrl']
                 }
             ]
         })
