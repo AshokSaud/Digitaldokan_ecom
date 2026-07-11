@@ -46,8 +46,8 @@ User.hasMany(Order,{foreignKey:'userId'})
 OrderDetail.belongsTo(Product,{foreignKey:'productId'})
 Product.hasOne(OrderDetail,{foreignKey:'productId'})
 
-Payment.belongsTo(Order,{foreignKey:'orderId'})
-Order.hasOne(Payment,{foreignKey:'orderId'})
+Order.belongsTo(Payment,{foreignKey:'paymentId'})
+Payment.hasOne(Order,{foreignKey:'paymentId'})
 
 OrderDetail.belongsTo(Order,{foreignKey:'orderId'})
 Order.hasOne(OrderDetail,{foreignKey:'orderId'})
