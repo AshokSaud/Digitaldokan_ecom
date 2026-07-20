@@ -7,7 +7,6 @@ import Category from "../database/model/categoryModel";
 class productController {
     async createProduct(req:Request, res: Response): Promise<void> {
         const { productName, productDescription, productPrice, productTotalStock, discount, categoryId } = req.body
-        console.log(req.file)
         const filename = req.file ? req.file.filename : "http://www.listercarterhomes.com/staff-member/natalie-naples/attachment/dummy-image-square/"
         if (!productName || !productDescription || !productPrice || !productTotalStock || !categoryId) {
             res.status(400).json({
@@ -15,7 +14,7 @@ class productController {
             })
             return
         }
-        await Product.create({
+        const product = await Product.create({
             productName,
             productDescription,
             productPrice,
@@ -25,7 +24,8 @@ class productController {
             productImageUrl: filename
         })
         res.status(200).json({
-            message: "product created successfully"
+            message: "product created successfully",
+            data : product
         })
 
     }
